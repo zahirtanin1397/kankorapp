@@ -54,13 +54,10 @@ const BookScreen = () => {
   };
 
   const handleOpenBook = (bookUrl) => {
+
     Linking.openURL(bookUrl)
       .catch((error) => {
-        if (error.statusCode === 404) {
-          ToastAndroid.show('خطا: صفحه مورد نظر یافت نشد', ToastAndroid.LONG);
-        } else {
-          ToastAndroid.show('خطا در باز کردن کتاب', ToastAndroid.LONG);
-        }
+        ToastAndroid.show('خطا در باز کردن کتاب', ToastAndroid.LONG);
       });
   };
 
@@ -97,8 +94,8 @@ const BookScreen = () => {
   );
 };
 
-export default BookScreen;
 
+export default BookScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -131,11 +128,11 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
   },
-  icons: {
-    marginLeft: 20,
-    marginRight: "auto"
+  icons : {
+    marginLeft : 20,
+    marginRight : "auto"
   },
-  poster: {
-    width: 70, height: 90, borderRadius: 8, marginLeft: 8,
+  poster : {
+    width: 70, height: 90,borderRadius: 8, marginLeft: 8,
   }
 });
