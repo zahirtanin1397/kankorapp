@@ -27,6 +27,12 @@
       },
       "api": {
         "signalClone": {}
+      },
+      "hosting": {
+        "amplifyhosting": {
+          "appId": "d1ljn1e0hhyx0r",
+          "type": "manual"
+        }
       }
     }
   }
