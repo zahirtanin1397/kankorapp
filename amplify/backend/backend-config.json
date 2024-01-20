@@ -75,11 +75,22 @@
       "service": "Lambda"
     }
   },
-  "hosting": {
-    "amplifyhosting": {
-      "providerPlugin": "awscloudformation",
-      "service": "amplifyhosting",
-      "type": "manual"
+  "parameters": {
+    "AMPLIFY_function_signalClonePostConfirmation_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "signalClonePostConfirmation"
+        }
+      ]
+    },
+    "AMPLIFY_function_signalClonePostConfirmation_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "signalClonePostConfirmation"
+        }
+      ]
     }
   },
   "storage": {
