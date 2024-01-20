@@ -1,0 +1,130 @@
+type Postlike @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  count: Int
+  postID: ID! @index(name: "byPost")
+  userID: ID! @index(name: "byUser")
+}
+
+type Replay @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  content: String
+  commnetID: ID! @index(name: "byCommnet")
+  userID: ID! @index(name: "byUser")
+}
+
+type Commnet @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  contet: String
+  userID: ID! @index(name: "byUser")
+  postID: ID! @index(name: "byPost")
+  Replays: [Replay] @hasMany(indexName: "byCommnet", fields: ["id"])
+}
+
+type Post @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  title: String
+  content: String
+  Commnets: [Commnet] @hasMany(indexName: "byPost", fields: ["id"])
+  imageUri: String
+  name: String
+  Postlikes: [Postlike] @hasMany(indexName: "byPost", fields: ["id"])
+}
+
+type Answer @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  text: String
+  questionID: ID! @index(name: "byQuestion")
+}
+
+type Question @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  text: String
+  quizID: ID! @index(name: "byQuiz")
+  Answers: [Answer] @hasMany(indexName: "byQuestion", fields: ["id"])
+  AcceptedAnswer: Answer @hasOne
+}
+
+type Quiz @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  name: String
+  description: String
+  shortdescription: String
+  grade: Float
+  isChanging: Boolean
+  password: Int
+  Questions: [Question] @hasMany(indexName: "byQuiz", fields: ["id"])
+}
+
+type TutorialEpisode @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  name: String
+  descrition: String
+  videoUri: String
+  duration: String
+  downloadable: Boolean
+  poster: String
+  tutorialseasonID: ID! @index(name: "byTutorialSeason")
+}
+
+type TutorialSeason @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  name: String
+  description: String
+  numberOfVideo: String
+  year: Int
+  teacher: String
+  tutorialcategoryID: ID! @index(name: "byTutorialCategory")
+  TutorialEpisodes: [TutorialEpisode] @hasMany(indexName: "byTutorialSeason", fields: ["id"])
+}
+
+type TutorialCategory @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  name: String
+  TutorialSeasons: [TutorialSeason] @hasMany(indexName: "byTutorialCategory", fields: ["id"])
+}
+
+type Faculty @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  name: String
+  imageUri: String
+  description: String
+}
+
+type University @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  name: String
+  inageUri: String
+  description: String
+}
+
+type Formula @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  name: String
+  value: String
+  formulacategoryID: ID! @index(name: "byFormulaCategory")
+}
+
+type FormulaCategory @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  name: String
+  description: String
+  Formulas: [Formula] @hasMany(indexName: "byFormulaCategory", fields: ["id"])
+}
+
+type Book @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  name: String
+  description: String
+  fileUri: String
+  poster: String
+}
+
+type User @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  name: String
+  imageUri: String
+  Commnets: [Commnet] @hasMany(indexName: "byUser", fields: ["id"])
+  Replays: [Replay] @hasMany(indexName: "byUser", fields: ["id"])
+  Postlike: [Postlike] @hasMany(indexName: "byUser", fields: ["id"])
+}
+ 

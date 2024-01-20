@@ -1,0 +1,12 @@
+{
+  "resourceName": "s3signalclonestorage8da73448zahiarcreated",
+  "bucketName": "signalclone-storage-8da73448zahiarcreated",
+  "policyUUID": "cabb30fd",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ]
+}

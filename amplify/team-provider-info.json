@@ -1,0 +1,33 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-signalclone-dev-143015-authRole",
+      "UnauthRoleArn": "arn:aws:iam::302626038284:role/amplify-signalclone-dev-143015-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::302626038284:role/amplify-signalclone-dev-143015-authRole",
+      "Region": "ap-south-1",
+      "DeploymentBucketName": "amplify-signalclone-dev-143015-deployment",
+      "UnauthRoleName": "amplify-signalclone-dev-143015-unauthRole",
+      "StackName": "amplify-signalclone-dev-143015",
+      "StackId": "arn:aws:cloudformation:ap-south-1:302626038284:stack/amplify-signalclone-dev-143015/11ad78e0-aae8-11ee-86e0-0a7222c5e644",
+      "AmplifyAppId": "d1ljn1e0hhyx0r",
+      "AuthTriggerTemplateURL": "https://s3.amazonaws.com/amplify-signalclone-dev-143015-deployment/amplify-cfn-templates/auth/auth-trigger-cloudformation-template.json"
+    },
+    "categories": {
+      "auth": {
+        "signalClone": {}
+      },
+      "storage": {
+        "s3signalclonestorage8da73448zahiarcreated": {}
+      },
+      "function": {
+        "signalClonePostConfirmation": {
+          "deploymentBucketName": "amplify-signalclone-dev-143015-deployment",
+          "s3Key": "amplify-builds/signalClonePostConfirmation-7a4a595454443143307a-build.zip"
+        }
+      },
+      "api": {
+        "signalClone": {}
+      }
+    }
+  }
+}
