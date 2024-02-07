@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, ScrollView, Image, Pressable } from "react-native";
+import { StyleSheet, Text, View, ScrollView, ToastAndroid, Pressable,Alert } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import ReplayContainer from "../../components/postComponent/ReplayContaner";
 import { Replay, User } from "../../src/models";
 import { DataStore } from "@aws-amplify/datastore";
-import { Storage } from "aws-amplify";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
+import { Auth } from "aws-amplify";
 import moment from "moment";
 import "moment/locale/fa";
 moment.locale("fa");
@@ -48,19 +46,73 @@ console.log("comment id is " , commentId);
     const fetchUser = async () => {
       try {
         const fetchUsers = await DataStore.query(User);
-        const userWithImage = await Promise.all(
-          fetchUsers.map(async (userImage) => {
-            const myImageUri = await Storage.get(userImage.imageUri);
-            return { ...userImage, imageUri: myImageUri };
-          })
-        );
-        setUsers(userWithImage);
+        setUsers(fetchUsers);
       } catch (error) {
         console.log("Error fetching users:", error);
       }
     };
     fetchUser();
   }, []);
+
+  const handleDeleteReplay = async (replayId) => {
+    try {
+      const authenticatedUser = await Auth.currentAuthenticatedUser();
+      const currentUserSub = authenticatedUser.attributes.sub;
+  
+      const replay = await DataStore.query(Replay, replayId);
+      if (replay && replay.userID === currentUserSub) {
+        Alert.alert(
+          'تایید حذف',
+          'آیا از حذف این پاسخ مطمئن هستید؟',          [
+            {
+              text: 'لغو',
+              style: 'cancel',
+            },
+            {
+              text: 'حذف',
+              style: 'destructive',
+              onPress: async () => {
+                await DataStore.delete(Replay, replayId);
+                ToastAndroid.show('پاسخ با موفقیت حذف شد', ToastAndroid.SHORT);
+              },
+            },
+          ]
+        );
+      } else {
+        ToastAndroid.show(
+          "شما مجاز به حذف این پاسخ نیستید",
+          ToastAndroid.SHORT
+        );
+      }
+    } catch (error) {
+      ToastAndroid.show('Error deleting replay:', error, ToastAndroid.SHORT);
+    }
+  };
+
+  const handleEditReplay = async (replayId, repalyContent) => {
+    try {
+      const authenticatedUser = await Auth.currentAuthenticatedUser();
+      const currentUserSub = authenticatedUser.attributes.sub;
+  
+      const replay = await DataStore.query(Replay, replayId);
+      if (replay && replay.userID === currentUserSub) {
+        navigation.navigate("EditReplayScreen", {
+          replayId: replayId,
+          replayContent: repalyContent,
+        });
+      } else {
+        ToastAndroid.show(
+          "شما مجاز به ویرایش این پاسخ نیستید",
+          ToastAndroid.SHORT
+        );
+      }
+    } catch (error) {
+      ToastAndroid.show("Error editing repaly:", error, ToastAndroid.SHORT);
+    }
+  };
+
+
+
 
   return (
     <View style={styles.container}>
@@ -72,15 +124,14 @@ console.log("comment id is " , commentId);
           const user = users.find((u) => u.id === replay.userID);
           if (user) {
             return (
-              <View style={{ flexDirection: "row" }} key={replay.id}>            
-                <Image
-                  source={{ uri: user?.imageUri }}
-                  style={styles.posterImage}
-                />
+              <View style={{ flexDirection: "row" }} key={replay.id}> 
+              <View  style={styles.namecontainer}>
+              <Text style={styles.nametext}>{user.name}</Text>
+                </View>           
+
                 <View style={styles.comment}>
                 <Text style = {styles.commentusername}>{"@"}{userName}</Text>
                 <View >
-                  <Text style={styles.nametext}>{user.name}</Text>
 
                   <Text style={styles.commenttext}>{replay.content}</Text>
                   <Text style={styles.timetext}>
@@ -88,6 +139,15 @@ console.log("comment id is " , commentId);
                     {moment(replay.createdAt).fromNow(true)}{" پیش"}
                   </Text>
                 </View>
+
+                <View style ={{flexDirection:"row"}}>
+                    <Pressable onPress={() => handleEditReplay(replay.id, replay.content)}>
+                      <Text style={styles.answertext}> ویرایش </Text>
+                    </Pressable>
+                    <Pressable onPress={() => handleDeleteReplay(replay.id)}>
+                      <Text style={styles.answertext}> حذف </Text>
+                    </Pressable>
+                  </View>
                 </View>
               
                 
@@ -126,6 +186,15 @@ const styles = StyleSheet.create({
   },
   content: {
     fontSize: 15,
+  },
+  namecontainer: {
+    marginLeft: 5,
+    borderWidth : 1,
+    borderColor : "green",
+    marginBottom : "auto",
+    padding : 5,
+    borderRadius : 5,
+    margin: 10,
   },
   rowicon: {
     flexDirection: "row",
@@ -177,19 +246,21 @@ const styles = StyleSheet.create({
   color :"gray",
   },
   nametext : {
-    fontSize : 16,
-    fontWeight : "500",
-    textAlign: 'left',
-  },
-  answertext :{
-    textAlign: 'right',
-    marginRight : -10,
-    marginTop : 5,
-    color : "#1c08f2"
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "left",
+    color: "#092709",
   },
   commentusername : {
     color :"#1523e6",
     fontWeight : "900",
     textAlign: 'left',
-  }
+  },
+  answertext: {
+    textAlign: "right",
+    marginRight: -10,
+    marginTop: 5,
+    color: "#1c08f2",
+    marginRight:4,
+  },
 });

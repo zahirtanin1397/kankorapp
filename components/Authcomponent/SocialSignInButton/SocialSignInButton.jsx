@@ -1,17 +1,17 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View, ToastAndroid } from 'react-native'
 import React from 'react'
 import CustomeButton from '../CustomeButton/CustomeButton'
 const SocialSignInButton = () => {
 
       const onSIgnInWithFacebook = () => {
-        console.warn("signIn woth Facebook");
+        ToastAndroid.show('sign in with facebook', ToastAndroid.SHORT);
       }
     
       const onSIgnInWithGoogle = () => {
-        console.warn("signIn woth Google");
+        ToastAndroid.show('sign in with google', ToastAndroid.SHORT);
       }
       const onSIgnInWithapple = () => {
-        console.warn("signIn woth Apple");
+        ToastAndroid.show('sign in with apple', ToastAndroid.SHORT);
       }
 
 

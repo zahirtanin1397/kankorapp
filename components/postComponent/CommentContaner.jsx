@@ -1,46 +1,54 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TextInput, ToastAndroid } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { DataStore } from '@aws-amplify/datastore';
 import { Commnet } from '../../src/models';
 import { Auth } from "aws-amplify";
+import NetInfo from '@react-native-community/netinfo';
 
-const CommentContainer = ({postinfo}) => {
+const CommentContainer = ({ postinfo }) => {
   const [comment, setComment] = useState('');
+  const [isConnected, setIsConnected] = useState(true);
 
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setIsConnected(state.isConnected);
+    });
 
-  console.log("post id " , postinfo);
-  const now = new Date();
-  const timeStump = now.getTime();
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   const handleCommentChange = (text) => {
     setComment(text);
   };
 
   const handleCommentSubmit = async () => {
+    if (!isConnected) {
+      ToastAndroid.show('برای ثبت نظر ویرایش و حذف ان به انترنیت متصل باشید', ToastAndroid.SHORT);
+      return;
+    }
+
     if (comment.trim() === '') {
       return;
     }
-  
+
     try {
       const user = await Auth.currentAuthenticatedUser();
       const AuthUserId = user.attributes.sub;
 
       const newComment = new Commnet({
-        postID: postinfo, 
-        userID:AuthUserId, 
+        postID: postinfo,
+        userID: AuthUserId,
         contet: comment,
       });
-  
       // Save the comment to the data store
       await DataStore.save(newComment);
-  
-      console.log('Submitted comment:', newComment);
-  
       // Clear the comment input field
       setComment('');
     } catch (error) {
-      console.error('Error saving comment:', error);
+      ToastAndroid.show('Error saving comment', ToastAndroid.SHORT);
     }
   };
 
@@ -59,8 +67,12 @@ const CommentContainer = ({postinfo}) => {
           placeholder="Enter your comment"
           value={comment}
           onChangeText={handleCommentChange}
+          editable={isConnected} // Disable the input field if offline
         />
       </View>
+      {!isConnected && (
+        <Text style={styles.offlineText}>برای ثبت نظر ویرایش و حذف ان به انترنیت متصل باشید</Text>
+      )}
     </View>
   );
 };
@@ -90,5 +102,11 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 40,
     paddingVertical: 7,
+  },
+  offlineText: {
+    marginTop: 10,
+    color: 'red',
+    fontSize: 14,
+    textAlign: 'center',
   },
 });

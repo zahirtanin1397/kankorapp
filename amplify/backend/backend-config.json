@@ -75,6 +75,7 @@
       "service": "Lambda"
     }
   },
+  "hosting": {},
   "parameters": {
     "AMPLIFY_function_signalClonePostConfirmation_deploymentBucketName": {
       "usedBy": [

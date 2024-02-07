@@ -1,2 +1,0 @@
-# ignore peerDependencies
-legacy-peer-deps=true

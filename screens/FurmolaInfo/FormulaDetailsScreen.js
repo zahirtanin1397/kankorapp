@@ -1,14 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity} from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, ToastAndroid} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { DataStore } from '@aws-amplify/datastore';
 import MathJax from "react-native-mathjax";
 import { Formula } from '../../src/models';
 
 
+const mathjaxOptions = {
+  messageStyle: 'none',
+  extensions: ['tex2jax.js'],
+  jax: ['input/TeX', 'output/HTML-CSS'],
+  tex2jax: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']],
+    processEscapes: true,
+  },
+  TeX: {
+    extensions: ['AMSmath.js', 'AMSsymbols.js', 'noErrors.js', 'noUndefined.js'],
+  },
+}
+
+
 const FormulaDetailsScreen = ({ route }) => {
   const { categoryId } = route.params;
-  console.log("formula category id " , categoryId);
   const [formulas, setFormulas] = useState([]);
   const navigation = useNavigation();
 
@@ -21,7 +35,7 @@ const FormulaDetailsScreen = ({ route }) => {
       const formulasData = await DataStore.query(Formula, (f) => f.formulacategoryID.eq(categoryId));
       setFormulas(formulasData);
     } catch (error) {
-      console.log('Failed to fetch formula data:', error);
+      ToastAndroid.show('Failed to fetch formula data:', error, ToastAndroid.SHORT);
     }
   };
 
@@ -39,19 +53,7 @@ const FormulaDetailsScreen = ({ route }) => {
       {containsMathNotation(item.value) ? (
         <MathJax
           html= {item.value}
-          mathJaxOptions={{
-            messageStyle: 'none',
-            extensions: ['tex2jax.js'],
-            jax: ['input/TeX', 'output/HTML-CSS'],
-            tex2jax: {
-              inlineMath: [['$', '$'], ['\\(', '\\)']],
-              displayMath: [['$$', '$$'], ['\\[', '\\]']],
-              processEscapes: true,
-            },
-            TeX: {
-              extensions: ['AMSmath.js', 'AMSsymbols.js', 'noErrors.js', 'noUndefined.js'],
-            },
-          }}
+          mathJaxOptions={mathjaxOptions}
         />
       ) : (
         <Text style={styles.formulaContent}>{item.value}</Text>
@@ -105,7 +107,7 @@ const styles = StyleSheet.create({
     color: '#666666',
   },
   goBackButton: {
-    backgroundColor: '#4287f5',
+    backgroundColor: '#110b63',
     borderRadius: 5,
     paddingVertical: 10,
     paddingHorizontal: 15,

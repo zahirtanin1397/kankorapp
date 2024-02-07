@@ -1,11 +1,11 @@
 import React from 'react';
-import { StyleSheet, Text, View,ScrollView, TouchableOpacity} from 'react-native';
+import { StyleSheet, Text,ToastAndroid, View,ScrollView, TouchableOpacity} from 'react-native';
 import { useRoute,useNavigation  } from '@react-navigation/native';
 
 const ExamDescription = (props) => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { id, name , description, grade } = route.params;
+  const { id, name , description, grade,time} = route.params;
 
   return (
     <ScrollView>
@@ -15,7 +15,7 @@ const ExamDescription = (props) => {
        <Text style={styles.descriptionText}>{description}</Text>
      </View>
 
-     <TouchableOpacity onPress={() => navigation.navigate("QuestionCodeScreen", {quizID : id, grade })}>
+     <TouchableOpacity onPress={() => navigation.navigate("QuestionCodeScreen", {quizID : id, grade,time })}>
        <View style={styles.buttonContainer}>
          <Text style={styles.buttonText}>شروع امتحان</Text>
        </View>

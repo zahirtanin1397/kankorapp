@@ -1,21 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, FlatList } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, ToastAndroid, Pressable } from 'react-native';
 import { DataStore } from '@aws-amplify/datastore';
 import { FormulaCategory } from '../../src/models';
-
+import {Hub} from "aws-amplify"
 const FormulaListScreen = ({ navigation }) => {
   const [categories, setCategories] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetchCategories();
+         fetchCategories();
   }, []);
 
   const fetchCategories = async () => {
     try {
+      setLoading(true);
       const categoriesData = await DataStore.query(FormulaCategory);
+      categoriesData.sort((a, b) => {
+        const createdAtB = new Date(a.createdAt);
+        const createdAtA = new Date(b.createdAt);
+        return createdAtB - createdAtA;
+      });
+
       setCategories(categoriesData);
+      setLoading(false);
     } catch (error) {
-      console.log(error);
+      ToastAndroid.show(error, ToastAndroid.SHORT);
     }
   };
 
@@ -24,9 +34,12 @@ const FormulaListScreen = ({ navigation }) => {
   };
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity style={styles.categoryItem} onPress={() => handleCategoryPress(item)}>
+    <Pressable style={styles.categoryItem} onPress={() => handleCategoryPress(item)}>
+      <View style ={{flexDirection : "row"}}>
       <Text style={styles.categoryName}>{item.name}</Text>
-    </TouchableOpacity>
+      <Text style={styles.categoryDescription}>{item.description}</Text>
+      </View>
+    </Pressable>
   );
 
   return (
@@ -36,6 +49,8 @@ const FormulaListScreen = ({ navigation }) => {
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.listContainer}
+        refreshing={loading}
+        onRefresh={fetchCategories}
       />
     </View>
   );
@@ -60,13 +75,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     borderRadius: 5,
     padding: 15,
-    borderWidth : 1,
-    borderColor : "green"
+    borderWidth: 2,
+    borderColor: '#110b63',
   },
   categoryName: {
     fontSize: 18,
     fontWeight: 'bold',
   },
+  categoryDescription  :{
+    marginLeft : 15,
+  }
 });
 
 export default FormulaListScreen;

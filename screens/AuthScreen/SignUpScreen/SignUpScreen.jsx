@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TextInput, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TextInput, ScrollView, TouchableOpacity,ToastAndroid } from 'react-native';
 import { useRoute,useNavigation  } from '@react-navigation/native';
 import { Auth } from 'aws-amplify';
 import React, { useState } from 'react';
@@ -9,51 +9,72 @@ const SignUpScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordRepeat, setPasswordRepeat] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const route = useRoute();
   const navigation = useNavigation();
 
   const signUp = async () => {
+    if (loading) {
+      return;
+    }
+    setLoading(true);
+
     try {
-      if (!password) {
-        throw new Error('رمز عبور الزامی است.');
+      if (!email) {
+        ToastAndroid.show('لطفاً ایمیل را وارد کنید.', ToastAndroid.SHORT);
+        setLoading(false);
+        return;
       }
-
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        ToastAndroid.show('لطفاً یک ایمیل معتبر وارد کنید.', ToastAndroid.SHORT);
+        setLoading(false);
+        return;
+      }
+      if (!password) {
+        ToastAndroid.show('لطفاً رمز عبور را وارد کنید.', ToastAndroid.SHORT);
+        setLoading(false);
+        return;
+      }
+      if (password !== passwordRepeat) {
+        ToastAndroid.show('رمز عبور و تکرار آن یکسان نیستند.', ToastAndroid.SHORT);
+        setLoading(false);
+        return;
+      }
       const attributes = {
-        email, // از متغیر state email به طور مستقیم استفاده می‌کنیم
-        name, // از متغیر state name به طور مستقیم استفاده می‌کنیم
-
+        email,
+        name,
       };
-
       await Auth.signUp({
-        username: email, // از ایمیل به عنوان نام کاربری استفاده می‌کنیم
+        username: email,
         password,
         attributes,
       });
-
-      console.log('عضویت با موفقیت انجام شد');
+        ToastAndroid.show('عضویت با موفقیت انجام شد', ToastAndroid.LONG);
+        setLoading(false);
       navigation.navigate("ConfirmEmail");
     } catch (error) {
-      console.log('خطا در ثبت نام:', error);
-      // با خطا برخورد کرده و پیام مناسبی را به کاربر نشان می‌دهیم
-      if (error.message === 'رمز عبور الزامی است.') {
-        console.log('لطفاً رمز عبور را وارد کنید.');
+      if (error.code === "UsernameExistsException") {
+        ToastAndroid.show("ایمیلی که وارد کرده‌اید قبلاً استفاده شده است.", ToastAndroid.LONG);
+      } else if (error.code === "InvalidPasswordException") {
+        ToastAndroid.show("رمز عبور باید حداقل ۸ رقم داشته باشد.", ToastAndroid.LONG);
+      } else if (error.code === "InvalidParameterException") {
+        ToastAndroid.show("خطا در ثبت نام: " + error.message, ToastAndroid.LONG);
       } else {
-        console.log('خطای غیرمنتظره‌ای رخ داده است. لطفاً دوباره تلاش کنید.');
+        ToastAndroid.show("خطا در ثبت نام: " + error.message, ToastAndroid.LONG);
       }
     }
   };
-
   const onSignInPressed = () => {
     console.warn("ورود");
     navigation.navigate("SignIn");
   };
 
   const onTermUsePressed = () => {
-    console.warn("شرایط استفاده");
   };
 
   const onPolicyPressed = () => {
-    console.warn("سیاست حفظ حریم خصوصی");
   };
 
   return (
@@ -87,7 +108,8 @@ const SignUpScreen = () => {
           secureTextEntry={true}
         />
 
-        <CustomeButton text="ثبت نام"
+        <CustomeButton 
+        text={loading ? "در حال بارگذاری..." : "ثبت نام"}
           onPress={signUp}
         />
 
@@ -127,13 +149,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: 'green',
+    color: '#110b63',
   },
   text: {
     marginVertical: 10,
   },
   link: {
-    color: 'green',
+    color: '#110b63',
     fontWeight: 'bold',
     fontSize: 16,
   },

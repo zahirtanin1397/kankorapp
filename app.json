@@ -19,18 +19,40 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "requireFullScreen": true
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "green"
-      }
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.zahirtanin.Kankor"
     },
     "web": {
       "favicon": "./assets/images/favicon.png",
-      "backgroundColor": "#000000" 
-    }
-  }
+      "backgroundColor": "#000000"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "7b9a873d-96ba-4797-866b-b620534902e9"
+      }
+    },
+    "plugins": [
+      [
+        "expo-screen-orientation",
+        {
+          "initialOrientation": "DEFAULT"
+        }
+      ]
+    ],
 
+    "androidStatusBar": {
+      "backgroundColor": "#C2185B",
+      "translucent": false,
+      "style": "white"
+    }
+
+
+  }
 }

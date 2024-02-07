@@ -1,10 +1,10 @@
-import { StyleSheet, Text, View, Image, useWindowDimensions, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, Image, useWindowDimensions, ScrollView, Alert, ActivityIndicator, ToastAndroid } from 'react-native';
 import { Auth } from 'aws-amplify';
 import { useNavigation } from "@react-navigation/native";
 import myLogo from "../../../assets/myLogo.jpg";
 import CustomeButton from '../../../components/Authcomponent/CustomeButton/CustomeButton';
 import CustomeInpute from '../../../components/Authcomponent/CustomeInput/CustomeInpute';
-import React, { useState } from 'react';
+import React, { useState} from 'react';
 
 const SignInScreen = () => {
   const { height } = useWindowDimensions();
@@ -14,24 +14,33 @@ const SignInScreen = () => {
 
   const navigation = useNavigation();
 
-  const signIn = async () => {
+  const onSignInPressed  = async () => {
     if (loading) {
       return;
     }
     setLoading(true);
-
+  
+    if (email.trim() === "" || password.trim() === "") {
+      ToastAndroid.show("Please enter your email and password", ToastAndroid.SHORT);
+      setLoading(false);
+      return;
+    }
+     // Email format validation
+     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+     if (!emailRegex.test(email)) {
+       ToastAndroid.show('لطفاً یک ایمیل معتبر وارد کنید.', ToastAndroid.SHORT);
+       setLoading(false);
+       return; // Return early to prevent further execution
+     }
+  
     try {
-      await Auth.signIn(email, password);
-      navigation.navigate("TutorialNavigation");
+      await Auth.signIn(email, password); 
     } catch (error) {
-      Alert.alert('خطا در ورود:');
       if (error.code === 'UserNotConfirmedException') {
         Alert.alert('کاربر تأیید نشده است.');
       } else if (error.code === 'NotAuthorizedException') {
-        Alert.alert('ایمیل یا رمز عبور اشتباه است.');
-      } else {
-        Alert.alert('خطای غیرمنتظره‌ای رخ داده است. لطفاً دوباره تلاش کنید.');
-      }
+        Alert.alert('ایمیل یا رمز عبور اشتباه است.', "ایمل و رمز خود را بررسی کنید");
+      } 
     } finally {
       setLoading(false);
     }
@@ -51,20 +60,21 @@ const SignInScreen = () => {
         <Image source={myLogo} style={[styles.logo, { height: height * 0.3 }]} resizeMode="contain" />
 
         <CustomeInpute
-          placeholder="ایمیل..."
-          value={email} // از متغیر state email به طور مستقیم استفاده می‌کنیم
-          setValue={setEmail} // از تابع setValue مربوط به متغیر state email به طور مستقیم استفاده می‌کنیم
+        placeholder="ایمیل..."
+          value={email}
+          setValue={setEmail}
         />
 
         <CustomeInpute
           placeholder="رمز عبور..."
           value={password}
           setValue={setPassword}
+          secureTextEntry={true}
         />
 
         <CustomeButton
           text={loading ? "در حال بارگذاری..." : "ورود"}
-          onPress={signIn}
+          onPress={onSignInPressed}
           disabled={loading}
           renderIndicator={() => <ActivityIndicator color="white" />}
         />
@@ -94,13 +104,13 @@ const styles = StyleSheet.create({
   root: {
     alignItems: "center",
     padding: 20,
-   
   },
   logo: {
     width: "80%",
     height: 100,
     maxWidth: 300,
     maxHeight: 200,
+    marginTop : 20,
   },
   email: {
     borderColor: "green",

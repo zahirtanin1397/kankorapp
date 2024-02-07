@@ -24,6 +24,9 @@
       },
       "storage": {
         "s3signalclonestorage8da73448zahiarcreated": {}
+      },
+      "api": {
+        "signalClone": {}
       }
     }
   },

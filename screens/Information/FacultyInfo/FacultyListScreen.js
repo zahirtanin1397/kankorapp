@@ -1,32 +1,41 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, FlatList, Pressable, StyleSheet, Image, ToastAndroid } from 'react-native';
 import { DataStore } from '@aws-amplify/datastore';
 import { Faculty } from '../../../src/models';
 import { Storage} from 'aws-amplify';
 
 const FacultyListScreen = ({ navigation }) => {
   const [faculties, setFaculties] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchUniversities = async () => {
-      try {
-        const universitiesData = await DataStore.query(Faculty);
-        const universitiesWithImages = await Promise.all(
-          universitiesData.map(async (faculty) => {
-            if (faculty.imageUri) {
-              const imageUrl = await Storage.get(faculty.imageUri);
-              return { ...faculty, imageUrl };
-            }
-            return faculty;
-          })
-        );
-        setFaculties(universitiesWithImages);
-      } catch (error) {
-        console.error('Failed to fetch university data:', error);
-      }
-    };
     fetchUniversities();
   }, []);
+
+  const fetchUniversities = async () => {
+    try {
+      setLoading(true);
+      const universitiesData = await DataStore.query(Faculty);
+      universitiesData.sort((a, b) => {
+        const createdAtB = new Date(a.createdAt);
+        const createdAtA = new Date(b.createdAt);
+        return createdAtB - createdAtA;
+      });
+      const universitiesWithImages = await Promise.all(
+        universitiesData.map(async (faculty) => {
+          if (faculty.imageUri) {
+            const imageUrl = await Storage.get(faculty.imageUri);
+            return { ...faculty, imageUrl };
+          }
+          return faculty;
+        })
+      );
+      setFaculties(universitiesWithImages);
+      setLoading(false);
+    } catch (error) {
+      ToastAndroid.show('Failed to fetch university data:', error, ToastAndroid.SHORT);
+    }
+  };
 
   const handleFacultyPress = (faculty) => {
     navigation.navigate('FacultyDetailsScreen', { faculty });
@@ -38,12 +47,14 @@ const FacultyListScreen = ({ navigation }) => {
         data={faculties}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => handleFacultyPress(item)}>
+          <Pressable onPress={() => handleFacultyPress(item)}>
             <View style={styles.universityContainer}>
               <Text style={styles.universityName}>{item.name}</Text>
             </View>
-          </TouchableOpacity>
+          </Pressable>
         )}
+        refreshing={loading}
+        onRefresh={fetchUniversities}
       />
     </View>
   );
@@ -60,9 +71,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 16,
     marginBottom: 6,
-    elevation: 0.5,
-    borderWidth : 1,
-    borderColor : "#0d530d",
+    elevation: 1,
+    borderWidth : 2,
+    borderColor : "#110b63",
   },
   universityName: {
     fontSize: 20,

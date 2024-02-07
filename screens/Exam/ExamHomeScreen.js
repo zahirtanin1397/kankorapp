@@ -1,18 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator,ToastAndroid } from 'react-native';
 import { DataStore, Predicates } from '@aws-amplify/datastore';
 import { Quiz } from '../../src/models';
 
 const ExamHomeScreen = ({ navigation }) => {
   const [quizzes, setQuizzes] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const fetchQuizzes = async () => {
     try {
-      const response = await DataStore.query(Quiz);
+      setLoading(true);
+      const response = await DataStore.query(Quiz
+      );
       setQuizzes(response);
+      setLoading(false);
     } catch (error) {
-      console.log(error);
+      ToastAndroid.show(error, ToastAndroid.SHORT);
     }
   };
 
@@ -26,18 +30,19 @@ const ExamHomeScreen = ({ navigation }) => {
     };
   }, []);
 
-  const handleQuizPress = ({ id, name, description, grade, isChanging, password }) => {
+  const handleQuizPress = ({ id, name, description, grade, isChanging, password,time }) => {
     if (isChanging) {
-      navigation.navigate('IsChanging', { id, name, description, grade, password });
+      navigation.navigate('IsChanging', { id, name, description, grade, password,time });
     } else {
-      navigation.navigate('ExamDescription', { id, name, description, grade, password });
+      navigation.navigate('ExamDescription', { id, name, description, grade, password,time });
     }
   };
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => handleQuizPress({ id: item.id, name: item.name, description: item.description, grade: item.grade, isChanging: item.isChanging, password: item.password })}>
+    <TouchableOpacity onPress={() => handleQuizPress({ id: item.id, name: item.name, description: item.description, grade: item.grade, isChanging: item.isChanging, password: item.password, time:item.time })}>
       <View style={styles.quizItem}>
         <Text style={styles.quizTitle}>{item.name}</Text>
         <Text style={styles.quizDescription}>{item.shortdescription}</Text>
+        <Text> time =  {item.time}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -48,12 +53,8 @@ const ExamHomeScreen = ({ navigation }) => {
         data={quizzes}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
-        refreshing={refreshing}
-        onRefresh={async () => {
-          setRefreshing(true);
-          await fetchQuizzes();
-          setRefreshing(false);
-        }}
+        refreshing={loading}
+        onRefresh={fetchQuizzes}
       />
       {refreshing && <ActivityIndicator style={styles.activityIndicator} />}
     </View>
@@ -71,8 +72,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     borderRadius: 5,
     padding: 15,
-    borderWidth : 1,
-    borderColor : "green"
+    borderWidth : 2,
+    borderColor : "#110b63",
+    backgroundColor  :"#f4f4f5"
   },
   quizTitle: {
     fontSize: 18,

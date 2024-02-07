@@ -1,41 +1,35 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, FlatList, Image, Linking, StatusBar, ToastAndroid } from 'react-native';
-import { Storage } from 'aws-amplify';
-import { DataStore } from "@aws-amplify/datastore";
+import { StyleSheet, Text, View, FlatList, Image, Linking, ToastAndroid, Pressable, TouchableOpacity } from 'react-native';
+import { Storage, Hub } from 'aws-amplify';
+import { DataStore} from "@aws-amplify/datastore";
 import { Book } from "../src/models";
 import { AntDesign } from '@expo/vector-icons';
 import NetInfo from '@react-native-community/netinfo';
-
+import { StatusBar } from 'expo-status-bar';
 const BookScreen = () => {
   const [books, setBooks] = useState([]);
-  const [isConnected, setIsConnected] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener((state) => {
-      setIsConnected(state.isInternetReachable && state.isConnected);
-    });
-
-    return () => {
-      unsubscribe();
-    };
+    fetchBooks();
   }, []);
 
-  useEffect(() => {
-    if (isConnected) {
-      fetchBooks();
-    }
-  }, [isConnected]);
 
-  const fetchBooks = async () => {
+  const  fetchBooks= async () => {
     try {
+      setLoading(true);
       const bookData = await DataStore.query(Book);
+      bookData.sort((a, b) => {
+        const createdAtB = new Date(a.createdAt);
+        const createdAtA = new Date(b.createdAt);
+        return createdAtB - createdAtA;
+      });
 
       // Fetch book URLs from S3
       const booksWithUrls = await Promise.all(
         bookData.map(async (book) => {
           let bookUrl = null;
           let posterUrl = null;
-
           try {
             bookUrl = await Storage.get(book.fileUri);
             posterUrl = await Storage.get(book.poster);
@@ -48,23 +42,28 @@ const BookScreen = () => {
       );
 
       setBooks(booksWithUrls);
+      setLoading(false);
     } catch (error) {
       ToastAndroid.show('خطا در دریافت لینک‌های کتاب', ToastAndroid.LONG);
     }
   };
 
   const handleOpenBook = (bookUrl) => {
-
-    Linking.openURL(bookUrl)
-      .catch((error) => {
-        ToastAndroid.show('خطا در باز کردن کتاب', ToastAndroid.LONG);
-      });
+    NetInfo.fetch().then((state) => {
+      if (state.isConnected) {
+        Linking.openURL(bookUrl)
+          .catch((error) => {
+            ToastAndroid.show('خطا در باز کردن کتاب', ToastAndroid.LONG);
+          });
+      } else {
+        ToastAndroid.show('شما در حال حاضر آفلاین هستید. لطفاً اتصال اینترنت خود را بررسی کنید.', ToastAndroid.LONG);
+      }
+    });
   };
-
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
       <View style={styles.row}>
-        <AntDesign name="clouddownload" size={40} color="#074d22"
+        <AntDesign name="clouddownload" size={40} color="#110b63"
           onPress={() => handleOpenBook(item.bookUrl)} style={styles.icons}
         />
         {item.posterUrl && (
@@ -83,19 +82,19 @@ const BookScreen = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar backgroundColor="white" />
+
       <FlatList
         data={books}
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.listContainer}
+        refreshing={loading}
+        onRefresh={fetchBooks}
       />
     </View>
   );
 };
 
-
-export default BookScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -136,3 +135,5 @@ const styles = StyleSheet.create({
     width: 70, height: 90,borderRadius: 8, marginLeft: 8,
   }
 });
+
+export default BookScreen;

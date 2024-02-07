@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity,ToastAndroid } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 const UniversityDetailsScreen = ({ route }) => {
   const { university } = route.params;
-
-  console.log("image " , university.imageUrl);
 
   const navigation = useNavigation();
   const [showFullDescription, setShowFullDescription] = useState(false);

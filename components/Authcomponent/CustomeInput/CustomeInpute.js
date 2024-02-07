@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, View } from 'react-native'
+import { StyleSheet,ToastAndroid, TextInput, View } from 'react-native'
 import React from 'react'
 
 const CustomeInpute = ({value , setValue , placeholder , secureTextEntry }) => {
@@ -9,6 +9,7 @@ const CustomeInpute = ({value , setValue , placeholder , secureTextEntry }) => {
          value={value}
          onChangeText={setValue}
          secureTextEntry = {secureTextEntry}
+         autoCapitalize="none"
       />
     </View>
   )

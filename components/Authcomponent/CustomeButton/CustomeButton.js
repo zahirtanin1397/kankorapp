@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View , Button , Pressable} from 'react-native'
+import { StyleSheet, Text, ToastAndroid , Pressable} from 'react-native'
 import React from 'react'
 
 const CustomeButton = ({onPress , text , type = "PRIMARY", bgcolor , fgColor }) => {
@@ -30,13 +30,13 @@ const styles = StyleSheet.create({
     },
 
     container_PRIMARY : {
-        backgroundColor : "green",
+        backgroundColor : "#110b63",
     },
     container_TERTIARY :{
         
     },
     container_SECONDARY :{
-        borderColor : "green",
+        borderColor : "#110b63",
         borderWidth : 2,
         
     },
@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
         color : "gray",
     },
     text_SECONDARY : {
-      color : "green",
+      color :"#110b63",
   }
 
 

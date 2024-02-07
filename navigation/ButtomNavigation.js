@@ -1,6 +1,7 @@
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
 import { Feather } from "@expo/vector-icons";
 import { Entypo } from '@expo/vector-icons';
+import { StatusBar } from "expo-status-bar";
 import { AntDesign } from '@expo/vector-icons';
 import FormulaStackNavigation from "../screens/FurmolaInfo/FormulaStackNavigation";
 import BookScreen from "../screens/BookScreen";
@@ -9,7 +10,7 @@ import ExamHomeScreen from "../screens/Exam/ExamHomeScreen";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 const Tab = createMaterialBottomTabNavigator();
 function ButtomNavigation() {
-  return (
+  return ( 
     <Tab.Navigator
     initialRouteName="Home"
     activeColor="black"
@@ -53,6 +54,6 @@ function ButtomNavigation() {
         }}
       />
     </Tab.Navigator>
-  );
+   );
 }
 export default ButtomNavigation;

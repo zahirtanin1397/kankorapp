@@ -5,11 +5,14 @@ import {
   StyleSheet,
   Text,
   View,
-  Pressable
+  Pressable, ToastAndroid, TouchableOpacity
 } from "react-native";
 import {
   Feather,
 } from "@expo/vector-icons";
+import myLogo from "../assets/myLogo.jpg";
+import {DataStore} from "@aws-amplify/datastore";
+import {  Auth } from 'aws-amplify';
 import { Ionicons } from '@expo/vector-icons';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
@@ -24,11 +27,14 @@ import ReplyScreen from "../screens/postScreen/ReplyScreen";
 import HomeScreenPost from "../screens/postScreen/HomeScreenPost";
 import CommentScreen from "../screens/postScreen/CommentScreen";
 import FormulaStackNavigation from "../screens/Information/UniversityMainScreen";
-import Settings from "../screens/setting/Settings";
-
+import Settings from "../screens/Setting/Settings";
+import EditCommentScreen from "../screens/postScreen/EditCommentScreen";
+import EditReplayScreen from "../screens/postScreen/EditReplayScreen";
 const Stack = createStackNavigator();
 
 export default function TutorialNavigation() {
+
+
   return (
     <NavigationContainer independent = {true} >
     <Stack.Navigator >
@@ -41,17 +47,27 @@ export default function TutorialNavigation() {
       <Stack.Screen
         name="ReplyScreen"
         component={ReplyScreen}
-        options={{ headerTitle:  "replay" }}
+        options={{ headerTitle:  "پاسخ" }}
+      />
+       <Stack.Screen
+        name="EditCommentScreen"
+        component={EditCommentScreen}
+        options={{ headerTitle:  "ویرایش" }}
+      />
+        <Stack.Screen
+        name="EditReplayScreen"
+        component={EditReplayScreen}
+        options={{ headerTitle:  "ویرایش" }}
       />
        <Stack.Screen
         name="HomeScreenPost"
         component={HomeScreenPost}
-        options={{ title : "post" }}
+        options={{ title : "پست" }}
       />
     <Stack.Screen
         name="CommentScreen"
         component={CommentScreen}
-        options={{ title : "comment" }}
+        options={{ title : "نظریات" }}
       />
 
 {/*  */}
@@ -104,17 +120,16 @@ export default function TutorialNavigation() {
 
 const HomeHeader = (props) => {
 
+
    const navigation = useNavigation();
  
    return (
      <View style={styles.headerShow}>
        <Image
-         source={{
-           uri: "https://notjustdev-dummy.s3.us-east-2.amazonaws.com/avatars/3.jpg",
-         }}
-         style={{ width: 32, height: 32, borderRadius: 50 }}
+         source={myLogo}
+         style={{ width: 32, height: 32 }}
        />
-       <Text style={styles.HomeText}>Home </Text>
+     <Text style ={styles.myappname}> سلام وطن دار </Text>
        <View style={styles.tools}>
        <Pressable onPress={()=> navigation.navigate("FormulaStackNavigation")}>
        <Ionicons name="information-circle-outline" size={27} color="gray" />
@@ -144,7 +159,7 @@ const HomeHeader = (props) => {
    tools: {
      flexDirection: "row",
      justifyContent: "space-around",
-     marginLeft: 70,
+     marginLeft: 50,
      alignItems : "center",
    
    },
@@ -169,5 +184,19 @@ const HomeHeader = (props) => {
      justifyContent: "space-between",
      marginLeft: 70,
    },
+   signout:{
+      marginLeft : 10,
+      width : 50,
+      height : 40,
+      backgroundColor : "green",
+      justifyContent : "center",
+      alignItems : "center",
+      borderRadius : 5,
+   },
+   myappname:{
+      color : "#054405",
+      fontSize : 20,
+      fontWeight : "bold",
+   }
  });
  

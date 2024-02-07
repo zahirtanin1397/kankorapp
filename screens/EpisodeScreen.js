@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, ToastAndroid } from 'react-native';
-import { DataStore } from "@aws-amplify/datastore";
-import NetInfo from '@react-native-community/netinfo';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, ToastAndroid, Dimensions } from 'react-native';
+import { DataStore } from '@aws-amplify/datastore';
 import { TutorialEpisode } from '../src/models';
 import VideoPlayer from '../components/VideoPlayer';
-import { Storage } from "aws-amplify";
+import { Storage } from 'aws-amplify';
 import EpisodeItem from '../components/EpisodeItem';
+import NetInfo from '@react-native-community/netinfo';
 
 const EpisodeScreen = ({ route }) => {
   const { seasonId } = route.params;
@@ -34,7 +34,7 @@ const EpisodeScreen = ({ route }) => {
   }, [isConnected]);
 
   const displayNetworkToast = () => {
-    const message = 'Cannot fetch data due to a network connection issue.';
+    const message = 'Cannot play the video due to a network connection issue.';
 
     ToastAndroid.showWithGravityAndOffset(
       message,
@@ -49,30 +49,59 @@ const EpisodeScreen = ({ route }) => {
     try {
       const episodesData = await DataStore.query(TutorialEpisode, (e) => e.tutorialseasonID.eq(seasonId));
 
-      const episodesWithVideoAndPosterUrls = await Promise.all(episodesData.map(async (episode) => {
-        const videoUrl = await Storage.get(episode.videoUri);
-        const posterUrl = await Storage.get(episode.poster);
-        return { ...episode, videoUri: videoUrl, posterUri: posterUrl };
-      }));
+      episodesData.sort((a, b) => {
+        const createdAtB = new Date(a.createdAt);
+        const createdAtA = new Date(b.createdAt);
+        return createdAtB - createdAtA;
+   });
+
+
+      const episodesWithVideoAndPosterUrls = await Promise.all(
+        episodesData.map(async (episode) => {
+          let videoUrl = null;
+          let posterUrl = null;
+
+          if (isConnected) {
+            try {
+              videoUrl = await Storage.get(episode.videoUri);
+            } catch (error) {
+              console.log('Hello can not fetch video!');
+            }
+          }
+          try {
+            posterUrl = await Storage.get(episode.poster);
+          } catch (error) {
+            console.error('Error fetching poster:', error);
+            // Handle error fetching poster (e.g., display a placeholder image)
+          }
+
+          return { ...episode, videoUri: videoUrl, posterUri: posterUrl };
+        })
+      );
 
       setEpisodes(episodesWithVideoAndPosterUrls);
       if (episodesWithVideoAndPosterUrls.length > 0) {
         setSelectedEpisode(episodesWithVideoAndPosterUrls[0]);
       }
     } catch (error) {
+      console.error('Error fetching episodes:', error);
       displayNetworkToast();
     }
   };
 
   const handleEpisodeSelect = (episode) => {
     setSelectedEpisode(episode);
-    console.log("selected episode ", episode);
   };
 
   return (
     <View style={styles.container}>
-      {selectedEpisode && selectedEpisode.videoUri && (
+      {selectedEpisode && selectedEpisode.videoUri && isConnected && (
         <VideoPlayer episode={selectedEpisode} downloadable={selectedEpisode?.downloadable} />
+      )}
+      {!isConnected && (
+        <View style={styles.noInternetContainer}>
+          <Text style={styles.noInternetText}>عدم اتصال به اینترنت!</Text>
+        </View>
       )}
       <FlatList
         data={episodes}
@@ -105,6 +134,19 @@ const styles = StyleSheet.create({
     padding: 0,
     marginTop: 1,
   },
+  noInternetContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'black',
+    width: Dimensions.get('window').width,
+    height: 290,
+    marginTop: 0,
+  },
+  noInternetText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'white',
+  },
   episodeContainer: {
     marginBottom: 10,
   },
@@ -125,8 +167,8 @@ const styles = StyleSheet.create({
   },
   movieTitle: {
     fontSize: 20,
-    fontWeight: "900",
-    textAlign: "left",
+    fontWeight: '900',
+    textAlign: 'left',
     marginHorizontal: 9,
   },
   posterImage: {
@@ -138,13 +180,17 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   description: {
-    marginTop: 1,
+    marginTop: 3,
     marginHorizontal: 7,
   },
   duration: {
     fontSize: 16,
-    marginLeft: 15,
+    marginLeft: 5,
   },
+  subtitleContainer : {
+    marginTop : -5,
+  }
+
 });
 
 export default EpisodeScreen;

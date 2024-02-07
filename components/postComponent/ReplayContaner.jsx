@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput } from 'react-native';
+import { StyleSheet, Text, View, TextInput, ToastAndroid } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { DataStore } from '@aws-amplify/datastore';
 import { Replay } from '../../src/models';
@@ -8,8 +8,6 @@ import { Auth } from "aws-amplify";
 const ReplayContainer = ({commentinfo}) => {
   const [replay, setreplay] = useState('');
 
-
-  console.log("replay  id in replay container " , commentinfo);
   const now = new Date();
   const timeStump = now.getTime();
 
@@ -35,12 +33,10 @@ const ReplayContainer = ({commentinfo}) => {
       // Save the comment to the data store
       await DataStore.save(newReplay);
   
-      console.log('Submitted replay:', newReplay);
-  
       // Clear the comment input field
       setreplay('');
     } catch (error) {
-      console.error('Error saving replay:', error);
+      ToastAndroid.show('Error saving replay:', ToastAndroid.SHORT);
     }
   };
 

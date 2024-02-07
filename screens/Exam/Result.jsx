@@ -1,13 +1,12 @@
-import { StyleSheet, Text, View, Pressable, BackHandler } from 'react-native';
+import { StyleSheet, Text, View, Pressable, BackHandler, ToastAndroid } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { DataStore } from '@aws-amplify/datastore';
 import { User } from "../../src/models";
 import { Auth } from "aws-amplify";
-import { useRoute, useNavigation } from "@react-navigation/native";
-
+import { useNavigation } from "@react-navigation/native";
 const Result = ({ route }) => {
   const navigation = useNavigation();
-  const { examResult } = route.params;
+  const { examResult, timeOutDescription } = route.params;
   const [userName, setUserName] = useState('');
 
   useEffect(() => {
@@ -19,7 +18,7 @@ const Result = ({ route }) => {
           setUserName(userData.name);
         }
       } catch (error) {
-        console.log(error);
+        ToastAndroid.show(error, ToastAndroid.SHORT);
       }
     };
 
@@ -37,13 +36,18 @@ const Result = ({ route }) => {
     navigation.navigate('Home');
     return true;
   };
+  const successMessage = "یادتان باشد که هیچ کس در یک روز به موفقیت نرسیده است. موفقیت، نتیجه تلاش‌های پیوسته و پشت سرهم است.";
 
   return (
     <View style={styles.container}>
-      <Text style={styles.greetingText}>Hello, {userName}!</Text>
-      <Text style={styles.resultText}>Exam Result: {examResult}</Text>
-      <Pressable onPress={() => navigation.navigate("Home")}>
-        <Text>End</Text>
+        <Text style={styles.greetingText}>سلام، {userName}! به نتیجه آزمون خود خوش آمدید. </Text>
+
+      <Text style ={{color:"#ec6666"}}>{timeOutDescription}</Text>
+      <Text style={styles.resultText}>نتیجه آزمون: {examResult}</Text>
+      <Text style={styles.successMessage}>{successMessage}</Text>
+      <Pressable onPress={() => navigation.navigate("Home")} style ={styles.homeContianer}>
+    
+        <Text style ={{color : "white"}}>بازگشت به خانه</Text>
       </Pressable>
     </View>
   );
@@ -51,25 +55,34 @@ const Result = ({ route }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex : 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#110b63',
   },
   greetingText: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
-    color: '#333',
+    color: '#ebdddd',
   },
   resultText: {
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
     textAlign: 'center',
-    color: '#333',
+    color: '#efebeb',
+  },
+  homeContianer : {
+    marginTop : 150,
+  },
+  successMessage: {
+    fontSize: 16,
+    textAlign: 'center',
+    color: '#666',
+    marginTop: 20,
   },
 });
 

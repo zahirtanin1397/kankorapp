@@ -1,10 +1,9 @@
-import { StyleSheet, Image, Text, View, Pressable } from 'react-native';
+import { StyleSheet, Image,ToastAndroid, Text, View, Pressable } from 'react-native';
 import React from 'react';
 
 const EpisodeItem = (props) => {
   const { episode, onPress } = props;
 
-  console.log("in Episode ", props);
 
   return (
     <Pressable onPress={() => onPress(episode)}>
@@ -14,8 +13,11 @@ const EpisodeItem = (props) => {
         )}
         <View style={styles.titleContainer}>
           <View style={styles.textContainer}>
+            <View style = {{flexDirection:"column"}}>
             <Text style={styles.title}>{episode?.name}</Text>
             <Text style={styles.duration}>{episode.duration}</Text>
+            </View>
+          
           </View>
         </View>
       </View>

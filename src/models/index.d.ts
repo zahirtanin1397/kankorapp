@@ -6,38 +6,6 @@ import { LazyLoading, LazyLoadingDisabled, AsyncCollection, AsyncItem } from "@a
 
 
 
-type EagerPostlike = {
-  readonly [__modelMeta__]: {
-    identifier: ManagedIdentifier<Postlike, 'id'>;
-    readOnlyFields: 'createdAt' | 'updatedAt';
-  };
-  readonly id: string;
-  readonly count?: number | null;
-  readonly postID: string;
-  readonly userID: string;
-  readonly createdAt?: string | null;
-  readonly updatedAt?: string | null;
-}
-
-type LazyPostlike = {
-  readonly [__modelMeta__]: {
-    identifier: ManagedIdentifier<Postlike, 'id'>;
-    readOnlyFields: 'createdAt' | 'updatedAt';
-  };
-  readonly id: string;
-  readonly count?: number | null;
-  readonly postID: string;
-  readonly userID: string;
-  readonly createdAt?: string | null;
-  readonly updatedAt?: string | null;
-}
-
-export declare type Postlike = LazyLoading extends LazyLoadingDisabled ? EagerPostlike : LazyPostlike
-
-export declare const Postlike: (new (init: ModelInit<Postlike>) => Postlike) & {
-  copyOf(source: Postlike, mutator: (draft: MutableModel<Postlike>) => MutableModel<Postlike> | void): Postlike;
-}
-
 type EagerReplay = {
   readonly [__modelMeta__]: {
     identifier: ManagedIdentifier<Replay, 'id'>;
@@ -115,7 +83,8 @@ type EagerPost = {
   readonly Commnets?: (Commnet | null)[] | null;
   readonly imageUri?: string | null;
   readonly name?: string | null;
-  readonly Postlikes?: (Postlike | null)[] | null;
+  readonly videoUri?: string | null;
+  readonly imageUriAsContent?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -131,7 +100,8 @@ type LazyPost = {
   readonly Commnets: AsyncCollection<Commnet>;
   readonly imageUri?: string | null;
   readonly name?: string | null;
-  readonly Postlikes: AsyncCollection<Postlike>;
+  readonly videoUri?: string | null;
+  readonly imageUriAsContent?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -221,6 +191,8 @@ type EagerQuiz = {
   readonly isChanging?: boolean | null;
   readonly password?: number | null;
   readonly Questions?: (Question | null)[] | null;
+  readonly time?: number | null;
+  readonly questionamount?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -238,6 +210,8 @@ type LazyQuiz = {
   readonly isChanging?: boolean | null;
   readonly password?: number | null;
   readonly Questions: AsyncCollection<Question>;
+  readonly time?: number | null;
+  readonly questionamount?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -530,7 +504,6 @@ type EagerUser = {
   readonly imageUri?: string | null;
   readonly Commnets?: (Commnet | null)[] | null;
   readonly Replays?: (Replay | null)[] | null;
-  readonly Postlike?: (Postlike | null)[] | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -545,7 +518,6 @@ type LazyUser = {
   readonly imageUri?: string | null;
   readonly Commnets: AsyncCollection<Commnet>;
   readonly Replays: AsyncCollection<Replay>;
-  readonly Postlike: AsyncCollection<Postlike>;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }

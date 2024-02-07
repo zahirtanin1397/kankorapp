@@ -5,7 +5,7 @@ import { Video, ResizeMode } from 'expo-av';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
-
+import NetInfo from '@react-native-community/netinfo';
 
 const VideoPlayer = (props) => {
   const [status, setStatus] = useState({});
@@ -13,10 +13,9 @@ const VideoPlayer = (props) => {
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
   const { episode , downloadable} = props;
+  const [downloadResumable, setDownloadResumable] = useState(null);
 
   const downloadFile = async () => {
-    let folderPath = ''; // Declare folderPath variable
-
     if (isDownloading) {
       // Cancel the download if it is already in progress
       downloadResumable && downloadResumable.pauseAsync();
@@ -24,59 +23,49 @@ const VideoPlayer = (props) => {
       setDownloadProgress(0);
     } else {
       setIsDownloading(true);
-      const folderName = 'kankordanish';
-      folderPath = FileSystem.documentDirectory + folderName + '/';
-
-      // Create the folder if it doesn't exist
-      try {
-        await FileSystem.makeDirectoryAsync(folderPath, { intermediates: true });
-        console.log('Created folder:', folderPath);
-      } catch (error) {
-        console.error('Error creating folder:', error);
-        setIsDownloading(false);
-        return;
-      }
     }
-
+  
     const timestamp = new Date().getTime();
     const fileName = `download_${timestamp}.mp4`;
-    const fileUri = folderPath + fileName;
-
+    const fileUri = FileSystem.documentDirectory + fileName;
+  
     const callback = downloadProgress => {
       const progress = downloadProgress.totalBytesWritten / downloadProgress.totalBytesExpectedToWrite;
       setDownloadProgress(progress);
     };
-
-    const downloadResumable = FileSystem.createDownloadResumable(
+  
+    const newDownloadResumable = FileSystem.createDownloadResumable(
       episode.videoUri,
       fileUri,
       {},
       callback
     );
-
+  
+    setDownloadResumable(newDownloadResumable); // Store the download resumable in state
+  
     try {
-      const { uri } = await downloadResumable.downloadAsync();
-      console.log('Finished downloading to:', uri);
+      const { uri } = await newDownloadResumable.downloadAsync();
       setDownloadProgress(0); // Clear the progress when the download finishes
-      await MediaLibrary.saveToLibraryAsync(uri); 
-      // Save the video to the device's media library
+      await MediaLibrary.saveToLibraryAsync(uri);
       if (Platform.OS === 'android') {
-        ToastAndroid.show(msg, ToastAndroid.LONG)
+        ToastAndroid.show(msg, ToastAndroid.LONG);
       } else {
         AlertIOS.alert(msg);
       }
     } catch (error) {
-      ToastAndroid.show('امکان اضافه کردن به کتابخانه وجود ندارد!', ToastAndroid.SHORT);
+      ToastAndroid.show(' به کتابخانه !', ToastAndroid.SHORT);
     }
+  
+    setDownloadResumable(null); // Clear the download resumable from state
   };
 
-  function setOrientation() {
+   function setOrientation() {
     if (Dimensions.get('window').height > Dimensions.get('window').width) {
       // Device is in portrait mode, rotate to landscape mode.
       ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
     } else {
       // Device is in landscape mode, rotate to portrait mode.
-      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT);
+       ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT);
     }
   }
 
@@ -102,12 +91,17 @@ const VideoPlayer = (props) => {
 
 
   const downloadAsyncWithoutHash = async () => {
+    if (isDownloading) {
+      ToastAndroid.show("the download is in progress ", ToastAndroid.SHORT);
+      return; // Don't start a new download if one is already in progress
+      
+    }
+  
     setIsDownloading(true);
   
     // Request media library permissions
     let { status } = await MediaLibrary.requestPermissionsAsync();
     if (status !== 'granted') {
-      // Handle permission denied
       Alert.alert('دسترسی رد شد. قادر به ذخیره ویدیو در کتابخانه نیست.');
       setIsDownloading(false);
       return;
@@ -133,7 +127,7 @@ const VideoPlayer = (props) => {
         isLoaded = {true}
         useNativeControls
         resizeMode={ResizeMode.CONTAIN }
-        onPlaybackStatusUpdate={(status) => setStatus(status)}
+        onPlaybackStatusUpdate={(status) => { setStatus(status); }}
         style={styles.videoshow}
         onFullscreenUpdate={setOrientation}
         onreadyfordisplay={() => setLoading(false)}
@@ -141,7 +135,7 @@ const VideoPlayer = (props) => {
       
       {loading && (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color="#03622e" />
+          <ActivityIndicator size="small" color="#110b63" />
         </View>
       )}
 
@@ -155,7 +149,7 @@ const VideoPlayer = (props) => {
         </TouchableOpacity>
         
 
-        {downloadable &&  status.isPlaying && (
+        {downloadable && (
           <TouchableOpacity onPress={downloadAsyncWithoutHash} style={styles.button}>
             {isDownloading ? (
               <Text style={styles.buttonText}>در حال دانلود...</Text>
@@ -187,7 +181,7 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   button: {
-    backgroundColor: '#03622e',
+    backgroundColor: '#110b63',
     flex: 1,
     height: 35,
     marginRight: 5,

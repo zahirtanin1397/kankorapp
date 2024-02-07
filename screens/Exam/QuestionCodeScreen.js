@@ -7,7 +7,9 @@ import {
   ScrollView,
   I18nManager,
   Pressable,
+  ToastAndroid,
 } from "react-native";
+import { CountdownCircleTimer } from 'react-native-countdown-circle-timer';
 import { Ionicons } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 
@@ -15,8 +17,6 @@ import React, { useEffect, useState } from "react";
 import { DataStore, Predicates } from "@aws-amplify/datastore";
 import { Question, Answer } from "../../src/models";
 import { useRoute, useNavigation } from "@react-navigation/native";
-// npm install -g sharp-cli
-// import MathJax from 'react-native-mathjax';
 import MathJax from "react-native-mathjax";
 
 I18nManager.forceRTL(true);
@@ -62,24 +62,95 @@ const mmlOptions = {
 const QuestionCodeScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { grade, quizID } = route.params;
+  const { grade, quizID,time } = route.params;
   const [questionCodes, setQuestionCodes] = useState([]);
   const [answerCodes, setAnswerCodes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [examResult, setExamResult] = useState(0);
+  const [timer , setTimer] = useState(time);
+// timer bellow
+  const formatTime = (time) => {
+    const hours = Math.floor(time / 3600);
+    const minutes = Math.floor((time % 3600) / 60);
+    const seconds = time % 60;
+    return `${hours}:${minutes}:${seconds}`;
+  };
+  const timeOutDescription = "زمان شما به پایان رسیده است. لطفاً دکمه 'نتیجه' را پیش از پایان زمان فشار دهید تا نتیجه آزمون نمایش داده شود."; 
+   const UrgeWithPleasureComponent = () => (
+    <CountdownCircleTimer
+      isPlaying
+      duration={timer} // Set the duration to 2 hours (7200 seconds)
+      colors={['#053f65', '#F7B801', '#0003a3', '#A30000']}
+      colorsTime={[7200, 3600, 1800, 0]}
+      size={40} 
+      strokeWidth={2} 
+      onComplete={() => navigation.navigate("Result", {examResult : 0, timeOutDescription})}
+    >
+      {({ remainingTime }) => <Text style={styles.timerText}>{formatTime(remainingTime)}</Text>}
+    </CountdownCircleTimer>
+  );
+///////////////////////////
 
   const fetchAnswerCodes = async (questionID) => {
     try {
       const answers = await DataStore.query(Answer, Predicates.ALL, {
         questionID: questionID,
       });
+
+      answers.sort((a, b) => {
+        const createdAtB = new Date(a.createdAt);
+        const createdAtA = new Date(b.createdAt);
+
+        return createdAtB - createdAtA;
+      });
+
       return answers;
     } catch (error) {
-      console.log(error);
+      ToastAndroid.show(error, ToastAndroid.SHORT);
       return [];
     }
   };
+
+  useEffect(() => {
+    const subscription = DataStore.observe(Answer).subscribe((msg) => {
+      if (msg.model === Answer) {
+        if (msg.opType === "INSERT") {
+          setAnswerCodes((existingAnswer) => [...existingAnswer, msg.element]);
+        } else if (msg.opType === "UPDATE") {
+          setAnswerCodes((existingAnswer) => {
+            const updatedAnswerIndex = existingAnswer.findIndex(
+              (answer) => answer.id === msg.element.id
+            );
+            if (updatedAnswerIndex !== -1) {
+              const updatedAnswer = {
+                ...existingAnswer[updatedAnswerIndex],
+                ...msg.element,
+              };
+              const updatedAnswers = [...existingAnswer];
+              updatedAnswers[updatedAnswerIndex] = updatedAnswer;
+              return updatedAnswers;
+            }
+            return existingAnswer;
+          });
+        } else if (msg.opType === "DELETE") {
+          setAnswerCodes((existingAnswer) => {
+            const deletedAnswerIndex = existingAnswer.findIndex(
+              (answer) => answer.id === msg.element.id
+            );
+            if (deletedAnswerIndex !== -1) {
+              const updatedAnswers = [...existingAnswer];
+              updatedAnswers.splice(deletedAnswerIndex, 1);
+              return updatedAnswers;
+            }
+            return existingAnswer;
+          });
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -88,6 +159,15 @@ const QuestionCodeScreen = () => {
       const questionCodesData = await DataStore.query(Question, (q) =>
         q.quizID.eq(quizID)
       );
+
+      questionCodesData.sort((a, b) => {
+        // Convert createdAt to the appropriate type if needed
+        const createdAtB = new Date(a.createdAt);
+        const createdAtA = new Date(b.createdAt);
+
+        // Compare the createdAt values
+        return createdAtB - createdAtA;
+      });
       setQuestionCodes(questionCodesData);
 
       const answerData = [];
@@ -113,6 +193,49 @@ const QuestionCodeScreen = () => {
 
     fetchData();
   }, [quizID]);
+
+  useEffect(() => {
+    const subscription = DataStore.observe(Question).subscribe((msg) => {
+      if (msg.model === Question) {
+        if (msg.opType === "INSERT") {
+          setQuestionCodes((existingquestion) => [
+            ...existingquestion,
+            msg.element,
+          ]);
+        } else if (msg.opType === "UPDATE") {
+          setQuestionCodes((existingquestion) => {
+            const updatedQuestionIndex = existingquestion.findIndex(
+              (answer) => answer.id === msg.element.id
+            );
+            if (updatedQuestionIndex !== -1) {
+              const updatedAnswer = {
+                ...existingquestion[updatedQuestionIndex],
+                ...msg.element,
+              };
+              const updatedAnswers = [...existingquestion];
+              updatedAnswers[updatedQuestionIndex] = updatedAnswer;
+              return updatedAnswers;
+            }
+            return existingquestion;
+          });
+        } else if (msg.opType === "DELETE") {
+          setQuestionCodes((existingquestion) => {
+            const deletedQuestionIndex = existingquestion.findIndex(
+              (question) => question.id === msg.element.id
+            );
+            if (deletedQuestionIndex !== -1) {
+              const updatedquestions = [...existingquestion];
+              updatedquestions.splice(deletedQuestionIndex, 1);
+              return updatedquestions;
+            }
+            return existingquestion;
+          });
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const AcceptedAnswerFunction = (answer, questionID) => {
     setSelectedAnswers((prevSelectedAnswers) => ({
@@ -141,28 +264,36 @@ const QuestionCodeScreen = () => {
 
   // ...
 
-  return (
+  return (<>
+    <View style={styles.timerContainer}>
+      <View style = {{flexDirection:"row",alignItems : "center"}}>
+      <UrgeWithPleasureComponent />
+      <Text style ={{fontSize : 10,marginRight:30, marginLeft: 5}}>
+      لطفاً به مدیریت مناسب زمان خود بپردازید و قبل 
+      از پایان زمان، دکمه نتیجه را فشار داده تا نتیجه خود را مشاهده کنید. در غیر اینصورت، نتیجه
+       شما صفر خواهد بود. به طور خودکار به صفحه نتیجه هدایت خواهید شد.
+      </Text>
+      </View>
+      </View>
     <ScrollView style={styles.container}>
       {questionCodes.map((questionCode, index) => (
         <View key={questionCode.id} style={styles.questionContainer}>
-        <View >
-          <Text style={styles.questionNumber}>
-            {"("} {index + 1} {")"}
-          </Text>
-          {containsMathNotation(questionCode.text) ? (
-            <MathJax
-              html={`<Text style={[styles.question, styles.mathjax]}>  ${questionCode.text}    </Text>`}
-              Options={mmlOptions}
-            />
-          ) : (
-            <Text style={styles.question}>{questionCode.text}</Text>
-          )}
-         </View>
+          <View>
+            <Text style={styles.questionNumber}>
+              {"("} {index + 1} {")"}
+            </Text>
+            {containsMathNotation(questionCode.text) ? (
+              <MathJax
+                html={`<Text style={[styles.question, styles.mathjax]}>  ${questionCode.text}    </Text>`}
+                Options={mmlOptions}
+              />
+            ) : (
+              <Text style={styles.question}>{questionCode.text}</Text>
+            )}
+          </View>
           <View style={styles.answerContainer}>
             {answerCodes
-              .filter(
-                (answerCode) => answerCode.questionID === questionCode.id
-              )
+              .filter((answerCode) => answerCode.questionID === questionCode.id)
               .map((answerCode, index) => (
                 <View key={answerCode.id} style={styles.answer}>
                   <Pressable
@@ -176,7 +307,7 @@ const QuestionCodeScreen = () => {
                     }
                   >
                     {selectedAnswers[questionCode.id] === answerCode.id && (
-                  <AntDesign name="select1" size={24} color="#1b3425" />
+                      <AntDesign name="select1" size={24} color="#1b3425" />
                     )}
                     <Text style={styles.optionNumber}>
                       {"("} {index + 1}
@@ -205,14 +336,15 @@ const QuestionCodeScreen = () => {
         <Text style={styles.resultButtonText}>Result</Text>
       </TouchableOpacity>
     </ScrollView>
-  );
+ </> );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 1,
     paddingTop: 2,
-    marginTop : 30,
+    marginTop: 30,
   },
   questionContainer: {
     marginBottom: 5,
@@ -296,8 +428,18 @@ const styles = StyleSheet.create({
     // Additional styles for selected answer
     backgroundColor: "lightgray",
     fontStyle: "italic",
-    borderWidth : 2,
-    borderColor : "#0f0f69"
+    borderWidth: 2,
+    borderColor: "#0f0f69",
+  },
+  timerContainer: {
+    justifyContent: 'center',
+    alignItems : "flex-start",
+    marginTop : 27,
+    marginBottom  :-27,
+    marginHorizontal : 5,
+  },
+  timerText: {
+    fontSize: 9, // Adjust the font size as needed
   },
 });
 export default QuestionCodeScreen;

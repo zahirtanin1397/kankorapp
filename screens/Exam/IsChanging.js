@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TextInput, Button, Alert , TouchableOpacity} from 'react-native';
+import { StyleSheet, Text, View, TextInput, Button, Alert , TouchableOpacity, ToastAndroid} from 'react-native';
 import { Auth } from 'aws-amplify';
 import { User } from '../../src/models';
 import { DataStore } from '@aws-amplify/datastore';
@@ -10,8 +10,7 @@ const IsChanging = () => {
   const [userName, setUserName] = useState('');
   const [inputPassword, setInputPassword] = useState('');
   const navigation = useNavigation();
-  const { id, name , description, grade , password } = route.params;
-  console.log('password', password);
+  const { id, name , description, grade , password,time } = route.params;
 
   useEffect(() => {
     const fetchUserName = async () => {
@@ -22,7 +21,7 @@ const IsChanging = () => {
           setUserName(userData.name);
         }
       } catch (error) {
-        console.log(error);
+        ToastAndroid.show(error, ToastAndroid.SHORT);  
       }
     };
     fetchUserName();
@@ -30,7 +29,7 @@ const IsChanging = () => {
 
   const handlePasswordSubmit = () => {
     if (parseInt(inputPassword) === password) {
-      navigation.navigate('ExamDescription', { id, name, description, grade });
+      navigation.navigate('ExamDescription', { id, name, description, grade,time });
     } else {
       Alert.alert('رمز عبور اشتباه است', 'رمز عبور وارد شده اشتباه است .');
     }
@@ -70,14 +69,14 @@ const styles = StyleSheet.create({
   input: {
     height: 40,
     width: '80%',
-    borderColor: '#127839',
+    borderColor: '#110b63',
     borderWidth: 1,
     marginBottom: 10,
     paddingHorizontal: 10,
   },
 
   button: {
-    backgroundColor: '#0d6944',
+    backgroundColor: '#110b63',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
