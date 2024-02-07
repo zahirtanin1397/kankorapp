@@ -194,10 +194,10 @@ export default HomeScreenPost;
 const styles = StyleSheet.create({
   mainContainer: {
     backgroundColor: "white",
-    marginRight: 4,
+    marginRight: 0,
   },
   container: {
-    margin: 3,
+    marginTop: 10,
     backgroundColor: "white",
   },
   image: {
@@ -207,8 +207,9 @@ const styles = StyleSheet.create({
     marginLeft: 1,
   },
   title: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: "bold",
+    marginLeft: 10,
   },
   noInternetContainer: {
     justifyContent: 'center',

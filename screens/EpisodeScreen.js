@@ -34,11 +34,11 @@ const EpisodeScreen = ({ route }) => {
   }, [isConnected]);
 
   const displayNetworkToast = () => {
-    const message = 'Cannot play the video due to a network connection issue.';
+    const message = 'به دلیل مشکل در اتصال شبکه، قادر به پخش ویدیو نمی‌باشیم.';
 
     ToastAndroid.showWithGravityAndOffset(
       message,
-      ToastAndroid.LONG,
+      ToastAndroid.SHORT,
       ToastAndroid.BOTTOM,
       0,
       100
@@ -114,11 +114,11 @@ const EpisodeScreen = ({ route }) => {
           selectedEpisode ? (
             <View style={styles.listHeader}>
               <View style={styles.titleContainer}>
-                <Text style={styles.movieTitle}>{selectedEpisode.name}</Text>
-                <Text style={styles.duration}>{selectedEpisode.duration}</Text>
+                <Text style={styles.movieTitle}>{selectedEpisode?.name}</Text>
+                <Text style={styles.duration}>{selectedEpisode?.duration}</Text>
               </View>
               <View style={styles.subtitleContainer}></View>
-              <Text style={styles.description}>{selectedEpisode.descrition}</Text>
+              <Text style={styles.description}>{selectedEpisode?.descrition}</Text>
             </View>
           ) : null
         }

@@ -100,7 +100,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
     padding: 1,
-    marginTop: 1
+    marginTop: 1,
+    marginHorizontal : 5,
   },
   listContainer: {
     flexGrow: 1,
@@ -120,12 +121,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   title: {
-    fontSize: 10,
+    fontSize: 15,
     fontWeight: 'bold',
     marginBottom: 3,
   },
   description: {
-    fontSize: 14,
+    fontSize: 10,
   },
   icons : {
     marginLeft : 20,

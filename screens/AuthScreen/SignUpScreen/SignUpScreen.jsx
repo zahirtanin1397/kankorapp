@@ -21,6 +21,11 @@ const SignUpScreen = () => {
     setLoading(true);
 
     try {
+      if (!name) {
+        ToastAndroid.show('لطفاً نام را وارد کنید.', ToastAndroid.SHORT);
+        setLoading(false);
+        return;
+      }
       if (!email) {
         ToastAndroid.show('لطفاً ایمیل را وارد کنید.', ToastAndroid.SHORT);
         setLoading(false);
@@ -57,12 +62,20 @@ const SignUpScreen = () => {
     } catch (error) {
       if (error.code === "UsernameExistsException") {
         ToastAndroid.show("ایمیلی که وارد کرده‌اید قبلاً استفاده شده است.", ToastAndroid.LONG);
+        setLoading(false);
+        return;
       } else if (error.code === "InvalidPasswordException") {
         ToastAndroid.show("رمز عبور باید حداقل ۸ رقم داشته باشد.", ToastAndroid.LONG);
+        setLoading(false);
+        return;
       } else if (error.code === "InvalidParameterException") {
         ToastAndroid.show("خطا در ثبت نام: " + error.message, ToastAndroid.LONG);
+        setLoading(false);
+        return;
       } else {
         ToastAndroid.show("خطا در ثبت نام: " + error.message, ToastAndroid.LONG);
+        setLoading(false);
+        return;
       }
     }
   };
@@ -144,7 +157,7 @@ const styles = StyleSheet.create({
   root: {
     alignItems: 'center',
     padding: 20,
-    marginTop : 40,
+    marginTop : 60,
   },
   title: {
     fontSize: 24,

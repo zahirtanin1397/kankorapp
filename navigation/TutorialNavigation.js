@@ -40,10 +40,8 @@ export default function TutorialNavigation() {
     <Stack.Navigator >
       <Stack.Screen name="Home" component={ButtomNavigation}
               options={{ headerTitle: (props) => <HomeHeader {...props} />, 
-             headerStyle  : { height : 70, shadowOpacity : 0.1,elevation : 1}
             }}
       />
-
       <Stack.Screen
         name="ReplyScreen"
         component={ReplyScreen}
@@ -129,7 +127,7 @@ const HomeHeader = (props) => {
          source={myLogo}
          style={{ width: 32, height: 32 }}
        />
-     <Text style ={styles.myappname}> سلام وطن دار </Text>
+     <Text style ={styles.myappname}> کانکور همرا </Text>
        <View style={styles.tools}>
        <Pressable onPress={()=> navigation.navigate("FormulaStackNavigation")}>
        <Ionicons name="information-circle-outline" size={27} color="gray" />
@@ -161,42 +159,12 @@ const HomeHeader = (props) => {
      justifyContent: "space-around",
      marginLeft: 50,
      alignItems : "center",
-   
-   },
-   HomeText: {
-     marginLeft: 40,
-     fontSize: 20,
-     fontWeight: "bold",
-   },
- 
-   chatheaderShow: {
-     flexDirection: "row",
-     justifyContent: "space-between",
-     marginHorizontal: -16,
-     alignItems : "center",
-   },
-   chatNameText: {
-     marginLeft: 10,
-     fontSize: 16,
-   },
-   cahttools: {
-     flexDirection: "row",
-     justifyContent: "space-between",
-     marginLeft: 70,
-   },
-   signout:{
-      marginLeft : 10,
-      width : 50,
-      height : 40,
-      backgroundColor : "green",
-      justifyContent : "center",
-      alignItems : "center",
-      borderRadius : 5,
    },
    myappname:{
-      color : "#054405",
+      color : "#290663",
       fontSize : 20,
       fontWeight : "bold",
+      
    }
  });
  

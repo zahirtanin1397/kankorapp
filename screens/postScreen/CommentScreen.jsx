@@ -242,11 +242,11 @@ const CommentScreen = () => {
             return (
               <View style={{ flexDirection: "row" }} key={comment.id}>
                 <View style={styles.namecontainer}>
-                  <Text style={styles.nametext}>{user.name}</Text>
+                  <Text style={styles.nametext}>{user?.name}</Text>
                 </View>
                 <View style={styles.comment}>
                   <View>
-                    <Text style={styles.commenttext}>{comment.contet}</Text>
+                    <Text style={styles.commenttext}>{comment?.contet}</Text>
                     <Text style={styles.timetext}>
                       {" "}
                       {moment(comment.createdAt).fromNow(true)}

@@ -5,7 +5,7 @@ import myLogo from "../../../assets/myLogo.jpg";
 import CustomeButton from '../../../components/Authcomponent/CustomeButton/CustomeButton';
 import CustomeInpute from '../../../components/Authcomponent/CustomeInput/CustomeInpute';
 import React, { useState} from 'react';
-
+import {DataStore} from "@aws-amplify/datastore";
 const SignInScreen = () => {
   const { height } = useWindowDimensions();
   const [email, setEmail] = useState("");
@@ -21,7 +21,7 @@ const SignInScreen = () => {
     setLoading(true);
   
     if (email.trim() === "" || password.trim() === "") {
-      ToastAndroid.show("Please enter your email and password", ToastAndroid.SHORT);
+      ToastAndroid.show("لطفا ایمیل و رمز را وارد کنید!", ToastAndroid.SHORT);
       setLoading(false);
       return;
     }
@@ -35,11 +35,16 @@ const SignInScreen = () => {
   
     try {
       await Auth.signIn(email, password); 
+       await  DataStore.start();
     } catch (error) {
       if (error.code === 'UserNotConfirmedException') {
         Alert.alert('کاربر تأیید نشده است.');
+        setLoading(false);
+       return;
       } else if (error.code === 'NotAuthorizedException') {
         Alert.alert('ایمیل یا رمز عبور اشتباه است.', "ایمل و رمز خود را بررسی کنید");
+        setLoading(false);
+       return;
       } 
     } finally {
       setLoading(false);
@@ -60,7 +65,7 @@ const SignInScreen = () => {
         <Image source={myLogo} style={[styles.logo, { height: height * 0.3 }]} resizeMode="contain" />
 
         <CustomeInpute
-        placeholder="ایمیل..."
+        placeholder="    ایمیل..."
           value={email}
           setValue={setEmail}
         />
@@ -78,7 +83,6 @@ const SignInScreen = () => {
           disabled={loading}
           renderIndicator={() => <ActivityIndicator color="white" />}
         />
-
         <CustomeButton
           text="فراموشی رمز عبور"
           onPress={onForgotPasswordPressed}
@@ -110,7 +114,7 @@ const styles = StyleSheet.create({
     height: 100,
     maxWidth: 300,
     maxHeight: 200,
-    marginTop : 20,
+    marginTop : 70,
   },
   email: {
     borderColor: "green",

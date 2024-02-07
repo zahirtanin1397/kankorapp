@@ -9,11 +9,9 @@ const UniversityMainScreen = () => {
   return (
  <>
 <Mytap.Navigator screenOptions={{
-  tabBarLabelStyle: { fontSize: 14 },
-  tabBarItemStyle: { marginTop: 20,width: 200 },
+  tabBarItemStyle: { marginTop: 30,width: 200 },
   tabBarScrollEnabled: true,
-  tabBarStyle: { backgroundColor: 'white' },
-  tabBarActiveTintColor: 'black',
+  tabBarStyle: {tabBarPosition  :'bottom' },
 
 }} 
      

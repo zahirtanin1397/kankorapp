@@ -12,7 +12,6 @@ import {
 import { DataStore } from "@aws-amplify/datastore";
 import { TutorialCategory, TutorialSeason } from "../src/models";
 import { useNavigation } from "@react-navigation/native";
-import { StatusBar } from "expo-status-bar";
 const TutorialCategoryScreen = () => {
   const [categories, setCategories] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -24,6 +23,7 @@ const TutorialCategoryScreen = () => {
 
   const fetchCategories = async () => {
     try {
+      setRefreshing(true);
       const categoriesData = await DataStore.query(TutorialCategory);
 
       categoriesData.sort((a, b) => {
@@ -55,6 +55,7 @@ const TutorialCategoryScreen = () => {
         })
       );
       setCategories(categoriesWithSeasons);
+      setRefreshing(false);
     } catch (error) {
       ToastAndroid.show(
         "Error while fetching categories:",
@@ -71,7 +72,7 @@ const TutorialCategoryScreen = () => {
   const renderCategory = ({ item }) => {
     return (
       <View style={styles.categoryContainer}  >
-        <Text style={styles.categoryName}>{item.name}</Text>
+        <Text style={styles.categoryName}>{item?.name}</Text>
         <ScrollView horizontal  showsHorizontalScrollIndicator={false}  >
           <View style={styles.seasonContainer}>
             {item.seasons.map((season) => (
@@ -81,16 +82,16 @@ const TutorialCategoryScreen = () => {
                 onPress={() => navigateToEpisodes(season.id)}
               >
                 <ScrollView showsVerticalScrollIndicator={false}  >
-                  <Text style={styles.seasonText}>{season.name}</Text>
+                  <Text style={styles.seasonText}>{season?.name}</Text>
                   <Text style={styles.teacherText}>
-                    استاد: {season.teacher}
+                    استاد: {season?.teacher}
                   </Text>
-                  <Text style={styles.yearText}>سال: {season.year}</Text>
+                  <Text style={styles.yearText}>سال: {season?.year}</Text>
                   <Text style={styles.videoCountText}>
-                    تعداد ویدیو: {season.numberOfVideo}
+                    تعداد ویدیو: {season?.numberOfVideo}
                   </Text>
                   <Text style={styles.descriptionText}>
-                    {season.description}
+                    {season?.description}
                   </Text>
                 </ScrollView>
               </Pressable>
@@ -108,11 +109,7 @@ const TutorialCategoryScreen = () => {
         renderItem={renderCategory}
         keyExtractor={(item) => item.id}
         refreshing={refreshing}
-        onRefresh={async () => {
-          setRefreshing(true);
-          await fetchCategories();
-          setRefreshing(false);
-        }}
+        onRefresh={fetchCategories}
       />
     </View>
   );

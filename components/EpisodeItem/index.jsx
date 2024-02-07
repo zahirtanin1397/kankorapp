@@ -8,14 +8,14 @@ const EpisodeItem = (props) => {
   return (
     <Pressable onPress={() => onPress(episode)}>
       <View style={styles.row}>
-        {episode.posterUri && (
-          <Image source={{ uri: episode.posterUri }} style={styles.posterImage} />
+        {episode?.posterUri && (
+          <Image source={{ uri: episode?.posterUri }} style={styles.posterImage} />
         )}
         <View style={styles.titleContainer}>
           <View style={styles.textContainer}>
             <View style = {{flexDirection:"column"}}>
             <Text style={styles.title}>{episode?.name}</Text>
-            <Text style={styles.duration}>{episode.duration}</Text>
+            <Text style={styles.duration}>{episode?.duration}</Text>
             </View>
           
           </View>

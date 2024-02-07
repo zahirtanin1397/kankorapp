@@ -8,56 +8,19 @@ import {
   I18nManager,
   Pressable,
   ToastAndroid,
+  Alert,
 } from "react-native";
 import { CountdownCircleTimer } from 'react-native-countdown-circle-timer';
 import { Ionicons } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
-
+import mmlOptions from "./Mathjaxnotation";
 import React, { useEffect, useState } from "react";
 import { DataStore, Predicates } from "@aws-amplify/datastore";
 import { Question, Answer } from "../../src/models";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import MathJax from "react-native-mathjax";
-
 I18nManager.forceRTL(true);
-
-const mmlOptions = {
-  messageStyle: "none",
-  extensions: ["tex2jax.js"],
-  jax: ["input/TeX", "output/CommonHTML"],
-  tex2jax: {
-    inlineMath: [
-      ["$", "$"],
-      ["\\(", "\\)"],
-    ],
-    displayMath: [
-      ["$$", "$$"],
-      ["\\[", "\\]"],
-    ],
-    processEscapes: true,
-    processEnvironments: true,
-  },
-  TeX: {
-    extensions: [
-      "AMSmath.js",
-      "AMSsymbols.js",
-      "noErrors.js",
-      "noUndefined.js",
-    ],
-    equationNumbers: {
-      autoNumber: "AMS",
-    },
-    displayAlign: "right", // Align displayed equations to the right
-    unicode: {
-      fonts: "TeX", // Use TeX fonts for proper rendering of RTL text
-    },
-  },
-  CommonHTML: {
-    scale: 50, // Adjust the scale value as needed (85 corresponds to 85% of the default size)
-    displayAlign: "right", // Align displayed equations to the right
-    undefinedFamily: "STIXGeneral,'Arial Unicode MS',serif", // Define the font for RTL text
-  },
-};
+import Timer from "./Timer";
 
 const QuestionCodeScreen = () => {
   const route = useRoute();
@@ -69,29 +32,10 @@ const QuestionCodeScreen = () => {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [examResult, setExamResult] = useState(0);
   const [timer , setTimer] = useState(time);
-// timer bellow
-  const formatTime = (time) => {
-    const hours = Math.floor(time / 3600);
-    const minutes = Math.floor((time % 3600) / 60);
-    const seconds = time % 60;
-    return `${hours}:${minutes}:${seconds}`;
-  };
-  const timeOutDescription = "زمان شما به پایان رسیده است. لطفاً دکمه 'نتیجه' را پیش از پایان زمان فشار دهید تا نتیجه آزمون نمایش داده شود."; 
-   const UrgeWithPleasureComponent = () => (
-    <CountdownCircleTimer
-      isPlaying
-      duration={timer} // Set the duration to 2 hours (7200 seconds)
-      colors={['#053f65', '#F7B801', '#0003a3', '#A30000']}
-      colorsTime={[7200, 3600, 1800, 0]}
-      size={40} 
-      strokeWidth={2} 
-      onComplete={() => navigation.navigate("Result", {examResult : 0, timeOutDescription})}
-    >
-      {({ remainingTime }) => <Text style={styles.timerText}>{formatTime(remainingTime)}</Text>}
-    </CountdownCircleTimer>
-  );
+  const [isTimerRunning, setIsTimerRunning] = useState(true);
 ///////////////////////////
 
+///////////////////////////
   const fetchAnswerCodes = async (questionID) => {
     try {
       const answers = await DataStore.query(Answer, Predicates.ALL, {
@@ -244,6 +188,7 @@ const QuestionCodeScreen = () => {
     }));
   };
 
+
   useEffect(() => {
     let counter = 0;
     for (const questionCode of questionCodes) {
@@ -262,13 +207,24 @@ const QuestionCodeScreen = () => {
     return mathRegex.test(text);
   }
 
-  // ...
+
+  // ...timer related 
+  const timeOutDescription = "دیده میشود که زمان شما به اتمام رسیده بوده و شما بالای دکمه نتیجه کلیک نکرده بودید نگران نباشید یک بار دیگر امتحان کنید";
+  const handleComplete = () => {
+    if (isTimerRunning) {
+      setIsTimerRunning(false);
+      navigation.navigate("Result", { examResult: 0, timeOutDescription });
+    }
+  }
+
+  ///////////
+ 
 
   return (<>
     <View style={styles.timerContainer}>
-      <View style = {{flexDirection:"row",alignItems : "center"}}>
-      <UrgeWithPleasureComponent />
-      <Text style ={{fontSize : 10,marginRight:30, marginLeft: 5}}>
+      <View style = {styles.timer}> 
+      <Timer duration={time} onComplete={handleComplete} isRunning={isTimerRunning} />
+      <Text style ={styles.timertext}>
       لطفاً به مدیریت مناسب زمان خود بپردازید و قبل 
       از پایان زمان، دکمه نتیجه را فشار داده تا نتیجه خود را مشاهده کنید. در غیر اینصورت، نتیجه
        شما صفر خواهد بود. به طور خودکار به صفحه نتیجه هدایت خواهید شد.
@@ -310,7 +266,7 @@ const QuestionCodeScreen = () => {
                       <AntDesign name="select1" size={24} color="#1b3425" />
                     )}
                     <Text style={styles.optionNumber}>
-                      {"("} {index + 1}
+                      {"("} {index + 1} {")"}
                     </Text>
                     <View style={styles.answerTextContainer}>
                       {containsMathNotation(answerCode.text) ? (
@@ -330,9 +286,11 @@ const QuestionCodeScreen = () => {
         </View>
       ))}
       <TouchableOpacity
-        style={styles.resultButton}
-        onPress={() => navigation.navigate("Result", { examResult })}
-      >
+        style={styles.resultButton} 
+        onPress={() => {
+          setIsTimerRunning(false);
+          navigation.navigate("Result", { examResult });
+        }}>
         <Text style={styles.resultButtonText}>Result</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -438,8 +396,15 @@ const styles = StyleSheet.create({
     marginBottom  :-27,
     marginHorizontal : 5,
   },
-  timerText: {
-    fontSize: 9, // Adjust the font size as needed
+  
+  timer :  {
+    flexDirection:"row",alignItems : "center",
+    marginTop : 10,
+    marginRight : 40,
+    marginLeft :5,
+    backgroundColor : "#dbd9d9",
   },
+  timertext : {fontSize : 10,padding : 15,}
+ 
 });
 export default QuestionCodeScreen;

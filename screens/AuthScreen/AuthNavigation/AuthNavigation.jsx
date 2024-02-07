@@ -15,15 +15,26 @@ import ForgotPasswordScreen from "../ForgotPasswordScreen/ForgotPasswordScreen";
 import NewPasswordScreen from "../NewPasswordScreen/NewPasswordScreen";
 import ConfirmEmailScreen from "../ConfirmEmailScreen/ConfirmEmailScreen";
 import TutorialNavigation from "../../../navigation/TutorialNavigation";
+import NetInfo from '@react-native-community/netinfo';
+import NotNetworkConnection from "../NotNetworkConnection";
 
 const AuthNavigation = () => {
   const Stack = createStackNavigator();
   const [user, setUser] = useState(undefined);
+  const [isConnected, setIsConnected] = useState(true);
+  const [isFirstTime, setIsFirstTime] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      setIsConnected(state.isConnected);
+    });
+    checkUser(); // Check user authentication status
+    return () => { unsubscribe();};},[]);
 
   const checkUser = async () => {
     try {
-      const AuthUser = await Auth.currentAuthenticatedUser({bypassCache:true});
-        setUser(AuthUser);
+      const AuthUser = await Auth.currentAuthenticatedUser({ bypassCache: true });
+      setUser(AuthUser);
     } catch (error) {
       setUser(null);
     }
@@ -33,19 +44,29 @@ const AuthNavigation = () => {
     checkUser();
   }, []);
 
- useEffect(() => {
-  const handleAuthEvent = (data) => {
-    if (data.payload.event === "signIn" || data.payload.event === "signOut") {
-      checkUser();
+  useEffect(() => {
+    const handleAuthEvent = (data) => {
+      if (data.payload.event === "signIn" || data.payload.event === "signOut") {
+        checkUser();
+      }
+    };
+
+    const removeAuthListener = Hub.listen("auth", handleAuthEvent);
+
+    return () => {
+      removeAuthListener();
+    };
+  }, []);
+
+  useEffect(() => {
+    setIsFirstTime(false);
+  }, []);
+
+  useEffect(() => {
+    if (!isConnected) {
+      setIsFirstTime(true);
     }
-  };
-
-  const removeAuthListener = Hub.listen("auth", handleAuthEvent);
-
-  return () => {
-    removeAuthListener();
-  };
-}, []);
+  }, [isConnected]);
 
   if (user === undefined) {
     return (
@@ -58,6 +79,12 @@ const AuthNavigation = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {isFirstTime && !isConnected && (
+          <Stack.Screen
+            name="NotNetWorkConnection"
+            component={NotNetworkConnection}
+          />
+        )}
         {user ? (
           <Stack.Screen
             name="TutorialNavigation"

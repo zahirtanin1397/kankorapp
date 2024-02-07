@@ -42,7 +42,6 @@ const ExamHomeScreen = ({ navigation }) => {
       <View style={styles.quizItem}>
         <Text style={styles.quizTitle}>{item.name}</Text>
         <Text style={styles.quizDescription}>{item.shortdescription}</Text>
-        <Text> time =  {item.time}</Text>
       </View>
     </TouchableOpacity>
   );

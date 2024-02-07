@@ -13,7 +13,7 @@ const FacultyStackNavigation  = () => {
     <NavigationContainer independent = {true}>
       <Stack.Navigator>
         <Stack.Screen name="FacultyListScreen" component={FacultyListScreen} options={{headerShown : false}} />
-        <Stack.Screen name="FacultyDetailsScreen" component={FacultyDetailsScreen}  options={{headerShown : false}} />
+        <Stack.Screen name="FacultyDetailsScreen" component={FacultyDetailsScreen}  options={{headerShown :false}} />
       </Stack.Navigator>
     </NavigationContainer>
   );
